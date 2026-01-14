@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (wird als Volume gemountet)
+data/*.db
+data/*.json
+data/*.csv
+data/*.parquet
+!data/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Tests
+test_*.py
+*_test.py
+tests/
+
+# Agent files (nicht benötigt für Pipeline)
+*agent*.py
+*agent*.db
+agent_memory/
+agent_config.json
+
+# Old files
+working_system.py
+simple_test.py
+direct_test.py
+

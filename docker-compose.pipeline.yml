@@ -1,0 +1,72 @@
+version: "3.9"
+
+services:
+  # Pipeline Service - Führt Crawling durch
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: climate-pipeline
+    environment:
+      - PYTHONUNBUFFERED=1
+      - RATE_LIMIT=1.0
+      - MAX_CONCURRENT=3
+      - STORAGE_DIR=/app/data
+    volumes:
+      - ./data:/app/data
+      - pipeline_data:/app/data
+    networks:
+      - pipeline-net
+    restart: unless-stopped
+    command: python run_pipeline.py
+
+  # Scheduler Service - Automatisiertes Crawling
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: climate-scheduler
+    environment:
+      - PYTHONUNBUFFERED=1
+      - RATE_LIMIT=1.0
+      - MAX_CONCURRENT=3
+      - STORAGE_DIR=/app/data
+    volumes:
+      - ./data:/app/data
+      - pipeline_data:/app/data
+    networks:
+      - pipeline-net
+    restart: unless-stopped
+    command: python pipeline.py --scheduled
+    depends_on:
+      - pipeline
+
+  # Web Dashboard - Zeigt extrahierte Daten an
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: climate-dashboard
+    environment:
+      - PYTHONUNBUFFERED=1
+      - STORAGE_DIR=/app/data
+    volumes:
+      - ./data:/app/data
+      - pipeline_data:/app/data
+    ports:
+      - "5000:5000"
+    networks:
+      - pipeline-net
+    restart: unless-stopped
+    command: python dashboard_viewer.py
+    depends_on:
+      - pipeline
+
+networks:
+  pipeline-net:
+    driver: bridge
+
+volumes:
+  pipeline_data:
+    driver: local
+

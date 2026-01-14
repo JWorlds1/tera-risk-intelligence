@@ -1,0 +1,27 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+crash.log
+crash.*.log
+
+# SSH Keys (sensibel!)
+keys/
+*.pem
+
+# Sensitive Variables (nicht in Git!)
+terraform.tfvars
+*.auto.tfvars
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+

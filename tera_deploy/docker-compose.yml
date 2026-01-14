@@ -1,0 +1,151 @@
+# TERA - Environmental Peace & Conflict Prediction System
+# Docker Compose Configuration
+
+version: '3.9'
+
+services:
+  # =============================================================================
+  # PostgreSQL + PostGIS (The Geospatial Brain)
+  # =============================================================================
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: tera-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tera
+      POSTGRES_USER: tera
+      POSTGRES_PASSWORD: tera_secure_2025
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tera -d tera"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =============================================================================
+  # Redis (Queue & Cache)
+  # =============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: tera-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  # =============================================================================
+  # Ollama (Local LLM Engine)
+  # =============================================================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: tera-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    deploy:
+      resources:
+        limits:
+          memory: 48G  # Reserve memory for LLM
+
+  # =============================================================================
+  # ChromaDB (Vector Store)
+  # =============================================================================
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: tera-chromadb
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+
+  # =============================================================================
+  # Backend API (FastAPI)
+  # =============================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tera-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=postgresql://tera:tera_secure_2025@postgres:5432/tera
+      - REDIS_URL=redis://redis:6379/0
+      - OLLAMA_URL=http://ollama:11434
+      - CHROMA_URL=http://chromadb:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      ollama:
+        condition: service_started
+
+  # =============================================================================
+  # Celery Worker (Background Tasks)
+  # =============================================================================
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tera-celery-worker
+    restart: unless-stopped
+    command: celery -A tasks.celery_app worker --loglevel=info --concurrency=4
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=postgresql://tera:tera_secure_2025@postgres:5432/tera
+      - REDIS_URL=redis://redis:6379/0
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - redis
+      - postgres
+      - ollama
+
+  # =============================================================================
+  # Frontend (React + Vite)
+  # =============================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tera-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+  ollama_data:
+  chroma_data:
+
+networks:
+  default:
+    name: tera-network
+

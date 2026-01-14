@@ -1,0 +1,78 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: geofin-backend
+    env_file:
+      - ./config/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - geofin-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: geofin-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - geofin-net
+
+  db:
+    image: postgis/postgis:15-3.4
+    container_name: geofin-db
+    environment:
+      POSTGRES_DB: geofin
+      POSTGRES_USER: geofin
+      POSTGRES_PASSWORD: geofin
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - geofin-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: geofin-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - geofin-net
+
+  scraper:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: geofin-scraper
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data
+      - ./backend:/app
+    command: python orchestrator.py
+    networks:
+      - geofin-net
+    restart: unless-stopped
+
+networks:
+  geofin-net:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
+  scraper_data:
+    driver: local
+
+

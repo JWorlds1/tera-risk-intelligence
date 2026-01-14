@@ -1,0 +1,258 @@
+{
+  "metadata": {
+    "generated_at": "2024-01-15T10:30:00",
+    "total_locations": 3,
+    "version": "1.0"
+  },
+  "locations": [
+    {
+      "location_id": "IN_mumbai",
+      "location_name": "Mumbai",
+      "location_type": "city",
+      "country_code": "IN",
+      "coordinates": [19.0760, 72.8777],
+      "geojson": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [72.8777, 19.0760]
+        },
+        "properties": {
+          "name": "Mumbai",
+          "type": "city"
+        }
+      },
+      "risk_score": 0.75,
+      "risk_level": "HIGH",
+      "urgency_score": 0.65,
+      "climate_data": {
+        "temperatures": {
+          "values": [28.5, 29.2, 30.1],
+          "average": 29.27,
+          "anomaly": 1.5,
+          "unit": "celsius"
+        },
+        "precipitation": {
+          "values": [1200, 1500, 1800],
+          "average": 1500,
+          "anomaly": 15.0,
+          "unit": "mm"
+        },
+        "population": {
+          "affected": 5000000,
+          "total_estimates": [12000000, 15000000]
+        },
+        "financial": {
+          "funding_amount": 50000000,
+          "amounts": [10000000, 25000000, 50000000]
+        },
+        "risk_indicators": ["heat_waves", "floods", "sea_level_rise"],
+        "conflict_indicators": ["migration", "resource_scarcity"]
+      },
+      "early_warning": {
+        "signals": [
+          {
+            "type": "HIGH_RISK",
+            "severity": "HIGH",
+            "message": "Hohes Risiko erkannt: 0.75",
+            "indicators": ["heat_waves", "floods", "sea_level_rise"]
+          },
+          {
+            "type": "HIGH_URGENCY",
+            "severity": "MEDIUM",
+            "message": "Hohe Dringlichkeit: 0.65",
+            "factors": {
+              "affected_population": 5000000
+            }
+          }
+        ],
+        "total_signals": 2,
+        "high_severity_count": 1,
+        "medium_severity_count": 1,
+        "urgency_score": 0.65,
+        "warning_level": "HIGH",
+        "requires_immediate_action": false
+      },
+      "adaptation_recommendations": [
+        {
+          "type": "heat_adaptation",
+          "priority": "HIGH",
+          "title": "Hitzeschutz-Maßnahmen",
+          "description": "Mumbai erlebt erhöhte Temperaturen. Implementierung von Hitzeschutz-Maßnahmen erforderlich.",
+          "actions": [
+            "Grünflächen und Schattenplätze schaffen",
+            "Kühlsysteme in öffentlichen Gebäuden installieren",
+            "Hitzewarnsysteme etablieren",
+            "Wasserversorgung sicherstellen"
+          ],
+          "timeframe": "kurzfristig",
+          "cost_estimate": "mittel",
+          "effectiveness": 0.8
+        },
+        {
+          "type": "monsoon_adaptation",
+          "priority": "MEDIUM",
+          "title": "Monsun-Anpassung",
+          "description": "Südasien ist stark von Monsun abhängig. Anpassung an veränderte Monsunmuster erforderlich.",
+          "actions": [
+            "Monsun-Vorhersage verbessern",
+            "Überschwemmungsschutz verstärken",
+            "Landwirtschaft anpassen",
+            "Wasserspeicherung optimieren"
+          ],
+          "timeframe": "mittelfristig",
+          "cost_estimate": "hoch",
+          "effectiveness": 0.75
+        }
+      ],
+      "causal_relationships": [
+        {
+          "source_location": "US",
+          "target_location": "IN",
+          "relationship_type": "causal",
+          "strength": 0.6,
+          "description": "Emissionen aus US tragen zu Klimafolgen in Mumbai bei",
+          "evidence": [
+            "Globale CO2-Emissionen",
+            "IPCC AR6 Daten",
+            "Klimamodell-Projektionen"
+          ],
+          "impact_direction": "negative",
+          "impact_type": "emissions",
+          "mitigation_potential": "high",
+          "recommendations": [
+            "US sollte Emissionsreduktion erhöhen",
+            "Klimafinanzierung für Mumbai bereitstellen",
+            "Technologie-Transfer unterstützen"
+          ]
+        },
+        {
+          "source_location": "CN",
+          "target_location": "IN",
+          "relationship_type": "causal",
+          "strength": 0.6,
+          "description": "Emissionen aus CN tragen zu Klimafolgen in Mumbai bei",
+          "evidence": [
+            "Globale CO2-Emissionen",
+            "IPCC AR6 Daten"
+          ],
+          "impact_direction": "negative",
+          "impact_type": "emissions",
+          "mitigation_potential": "high",
+          "recommendations": [
+            "CN sollte Emissionsreduktion erhöhen",
+            "Klimafinanzierung für Mumbai bereitstellen"
+          ]
+        },
+        {
+          "source_location": "PK",
+          "target_location": "IN",
+          "relationship_type": "correlative",
+          "strength": 0.4,
+          "description": "Regionale Klimamuster zwischen Pakistan und Mumbai",
+          "evidence": [
+            "Gemeinsame Klimazone",
+            "Ähnliche Vulnerabilität",
+            "Regionale Klimamodelle"
+          ],
+          "impact_direction": "mixed",
+          "impact_type": "regional_climate_patterns",
+          "cooperation_potential": "high",
+          "recommendations": [
+            "Regionale Kooperation stärken",
+            "Gemeinsame Anpassungsstrategien entwickeln",
+            "Daten-Austausch etablieren"
+          ]
+        },
+        {
+          "source_location": "GLOBAL",
+          "target_location": "IN",
+          "relationship_type": "causal",
+          "strength": 0.8,
+          "description": "Globale Klimaveränderungen beeinflussen Mumbai",
+          "evidence": [
+            "IPCC AR6 globale Projektionen",
+            "Temperatur-Anomalien",
+            "Meeresspiegel-Anstieg"
+          ],
+          "impact_direction": "negative",
+          "impact_type": "global_climate_change",
+          "mitigation_potential": "global",
+          "recommendations": [
+            "Globale Emissionsreduktion erforderlich",
+            "Internationale Klimaabkommen einhalten",
+            "Klimafinanzierung mobilisieren"
+          ]
+        }
+      ],
+      "last_updated": "2024-01-15T10:30:00",
+      "next_update": "2024-01-16T10:30:00",
+      "data_quality": {
+        "data_sources_count": 3,
+        "completeness": 0.75,
+        "text_data_available": true,
+        "numerical_data_available": true,
+        "image_data_available": false,
+        "sensor_fusion_available": true,
+        "quality_level": "HIGH"
+      }
+    }
+  ],
+  "global_statistics": {
+    "total_locations": 3,
+    "risk_distribution": {
+      "HIGH": 2,
+      "CRITICAL": 1
+    },
+    "average_urgency": 0.58,
+    "total_adaptation_recommendations": 8,
+    "critical_locations": 1,
+    "high_urgency_locations": 2
+  },
+  "causal_network": {
+    "nodes": [
+      {"id": "US", "type": "location"},
+      {"id": "CN", "type": "location"},
+      {"id": "IN", "type": "location"},
+      {"id": "PK", "type": "location"},
+      {"id": "GLOBAL", "type": "location"}
+    ],
+    "edges": [
+      {
+        "source": "US",
+        "target": "IN",
+        "type": "causal",
+        "strength": 0.6,
+        "impact_direction": "negative",
+        "description": "Emissionen aus US tragen zu Klimafolgen in Mumbai bei"
+      },
+      {
+        "source": "CN",
+        "target": "IN",
+        "type": "causal",
+        "strength": 0.6,
+        "impact_direction": "negative",
+        "description": "Emissionen aus CN tragen zu Klimafolgen in Mumbai bei"
+      },
+      {
+        "source": "PK",
+        "target": "IN",
+        "type": "correlative",
+        "strength": 0.4,
+        "impact_direction": "mixed",
+        "description": "Regionale Klimamuster zwischen Pakistan und Mumbai"
+      },
+      {
+        "source": "GLOBAL",
+        "target": "IN",
+        "type": "causal",
+        "strength": 0.8,
+        "impact_direction": "negative",
+        "description": "Globale Klimaveränderungen beeinflussen Mumbai"
+      }
+    ]
+  }
+}
+
+
+

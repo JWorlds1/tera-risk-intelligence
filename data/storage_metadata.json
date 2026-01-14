@@ -1,0 +1,24 @@
+{
+  "created_at": "2025-11-21T22:32:17.831103",
+  "directories": {
+    ".": {
+      "files": [
+        {
+          "name": ".gitkeep",
+          "path": ".gitkeep",
+          "size": 0,
+          "modified": "2025-11-09T11:58:25.780113"
+        },
+        {
+          "name": "climate_conflict.db",
+          "path": "climate_conflict.db",
+          "size": 147456,
+          "modified": "2025-11-09T13:23:34.869109"
+        }
+      ],
+      "total_size": 147456
+    }
+  },
+  "total_files": 2,
+  "total_size_bytes": 147456
+}

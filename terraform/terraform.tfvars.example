@@ -1,0 +1,50 @@
+# =============================================================================
+# Terraform Variables - Beispiel-Konfiguration
+# Kopiere diese Datei zu terraform.tfvars und passe die Werte an
+# =============================================================================
+
+# OpenStack Authentifizierung (aus OpenRC / clouds.yaml)
+auth_url                      = "https://h-da.cloud:13000"
+application_credential_id     = "ba44dda4814e443faba80ae101d704a8"
+application_credential_secret = "Wesen"
+region                        = "eu-central"
+
+# Server Konfiguration
+server_name = "geospatial-server"
+
+# Wähle eines der verfügbaren Images:
+# - "Ubuntu 22.04"
+# - "Ubuntu 20.04"
+# - "Debian 11"
+# - "CentOS 8"
+image_name = "Ubuntu 22.04"
+
+# Wähle einen Flavor basierend auf deinen Anforderungen:
+# Standard Flavors (typisch):
+# - "m1.tiny"   - 1 vCPU,  512 MB RAM,  1 GB Disk
+# - "m1.small"  - 1 vCPU, 2048 MB RAM, 20 GB Disk
+# - "m1.medium" - 2 vCPU, 4096 MB RAM, 40 GB Disk
+# - "m1.large"  - 4 vCPU, 8192 MB RAM, 80 GB Disk
+# - "m1.xlarge" - 8 vCPU, 16384 MB RAM, 160 GB Disk
+flavor_name = "m1.small"
+
+# Netzwerk (prüfe verfügbare Netzwerke mit: terraform plan)
+network_name = "private-network"
+
+# Security Groups
+security_groups = ["default"]
+
+# SSH Konfiguration
+ssh_key_name     = "geospatial-key"
+generate_ssh_key = true
+# Falls du einen existierenden Key nutzen möchtest:
+# generate_ssh_key = false
+# existing_public_key = "~/.ssh/id_rsa.pub"
+
+# Floating IP (öffentliche IP für SSH-Zugang von außen)
+assign_floating_ip = true
+floating_ip_pool   = "public"
+
+# Cloud-Init (automatische Paketinstallation beim Start)
+user_data_enabled = true
+
