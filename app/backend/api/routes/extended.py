@@ -16,7 +16,8 @@ async def temporal_projection(city: str, year: int = 2026, scenario: str = 'SSP2
             raise HTTPException(status_code=404, detail=f'City not found: {city}')
         
         lat, lon = geo['lat'], geo['lon']
-        country = geo['country']
+        # Geocoding service does not always return country
+        country = geo.get('country') or geo.get('name', '').split(',')[-1].strip()
         
         # Base risk assessment (2024-2026 baseline)
         engine = get_engine()
