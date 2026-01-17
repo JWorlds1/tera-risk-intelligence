@@ -113,3 +113,11 @@ class GeocodingService:
             logger.error(f"Reverse geocoding error: {e}")
             return None
 
+
+# Convenience function for routes expecting geocode_city
+_geo_service = GeocodingService()
+
+
+async def geocode_city(location: str) -> Optional[Dict[str, Any]]:
+    """Geocode a city/location name to coordinates."""
+    return await _geo_service.geocode(location)
