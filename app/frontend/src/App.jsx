@@ -74,6 +74,8 @@ export default function App() {
   const [scenario, setScenario] = useState("SSP2-4.5")
   const [projectionFactor, setProjectionFactor] = useState(1.0)
   const abortController = useRef(null)
+  const projectionFactorRef = useRef(1.0)
+  const lastFeaturesRef = useRef(null)
 
   function animateHexagons(features) {
     if (!map.current || !features.length) return
@@ -114,8 +116,10 @@ export default function App() {
       const animated = features.map((f, i) => {
         const delay = (i % 70) / 70 * 0.35
         const progress = Math.max(0, Math.min(1, (t - delay) / (1 - delay)))
-        const height = progress * progress * (f.properties.intensity || 0.5) * 450
-        return { ...f, properties: { ...f.properties, height } }
+        const baseHeight = (f.properties.intensity || 0.5) * 1400
+        const scaledHeight = Math.min(6000, baseHeight * Math.pow(projectionFactorRef.current, 1.8))
+        const height = progress * progress * scaledHeight
+        return { ...f, properties: { ...f.properties, height, baseHeight } }
       })
       
       src.setData({ type: 'FeatureCollection', features: animated })
@@ -123,10 +127,14 @@ export default function App() {
       if (frame < total) {
         requestAnimationFrame(animate)
       } else {
-        const final = features.map(f => ({
-          ...f,
-          properties: { ...f.properties, height: (f.properties.intensity || 0.5) * 450 }
-        }))
+        const final = features.map(f => {
+          const baseHeight = (f.properties.intensity || 0.5) * 1400
+          const scaledHeight = Math.min(6000, baseHeight * Math.pow(projectionFactorRef.current, 1.8))
+          return {
+            ...f,
+            properties: { ...f.properties, height: scaledHeight, baseHeight }
+          }
+        })
         src.setData({ type: 'FeatureCollection', features: final })
         setPhase('')
         setLoading(false)
@@ -215,6 +223,7 @@ export default function App() {
           console.log('TERA: Features received:', hexData.features?.length || 0)
           setCells(hexData.features?.length || 0)
           if (hexData.features?.length) {
+            lastFeaturesRef.current = hexData.features
             animateHexagons(hexData.features)
           } else {
             setPhase('KEINE ZELLEN')
@@ -248,21 +257,25 @@ export default function App() {
     
     const fetchProjection = async () => {
       try {
+        console.log('TERA: temporal fetch', { city, year, scenario })
         const res = await fetch(
           `http://localhost:8080/api/extended/temporal?city=${encodeURIComponent(city)}&year=${year}&scenario=${encodeURIComponent(scenario)}`
         )
         if (res.ok) {
           const data = await res.json()
+          console.log('TERA: temporal response', data)
           // Calculate scaling factor based on projected vs current risk
           const baseRisk = report.risk_score || 0.15
           const projectedRisk = data.risks?.total || baseRisk
           const factor = projectedRisk / Math.max(baseRisk, 0.01)
+          console.log('TERA: projection factor', { baseRisk, projectedRisk, factor })
           setProjectionFactor(Math.min(Math.max(factor, 0.5), 3.0)) // Clamp 0.5-3x
         } else {
+          console.warn('TERA: temporal non-OK status', res.status)
           setProjectionFactor(1.0)
         }
       } catch (e) {
-        console.log('Temporal projection unavailable:', e)
+        console.log('TERA: temporal projection unavailable:', e)
         setProjectionFactor(1.0)
       }
     }
@@ -272,18 +285,23 @@ export default function App() {
 
   // Scale hexagon heights when projectionFactor changes
   useEffect(() => {
+    projectionFactorRef.current = projectionFactor
+    console.log('TERA: apply projectionFactor', projectionFactor)
     if (!map.current) return
     const src = map.current.getSource('hex')
     if (!src) return
     
-    // Get current features and scale heights
-    const currentData = src._data
-    if (currentData?.features && currentData.features.length > 0) {
-      const scaled = currentData.features.map(f => ({
+    const baseFeatures = lastFeaturesRef.current
+    if (baseFeatures && baseFeatures.length > 0) {
+      console.log('TERA: scaling features', baseFeatures.length)
+      const scaled = baseFeatures.map(f => ({
         ...f,
         properties: {
           ...f.properties,
-          height: (f.properties.intensity || 0.5) * 450 * projectionFactor
+          height: Math.min(
+            6000,
+            (f.properties.baseHeight || (f.properties.intensity || 0.5) * 1400) * Math.pow(projectionFactor, 1.8)
+          )
         }
       }))
       src.setData({ type: 'FeatureCollection', features: scaled })
@@ -389,7 +407,7 @@ export default function App() {
               </div>
               <div style="background:#111;padding:10px;border-radius:6px">
                 <div style="color:#666;margin-bottom:4px">3D HÖHE</div>
-                <div style="color:#fff;font-size:14px;font-weight:bold">${((p.intensity||0)*450).toFixed(0)}m</div>
+                <div style="color:#fff;font-size:14px;font-weight:bold">${((p.intensity||0)*1400).toFixed(0)}m</div>
               </div>
             </div>
           </div>
