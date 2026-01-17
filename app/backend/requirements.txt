@@ -23,7 +23,7 @@ pyproj==3.6.1
 # LLM & AI
 httpx>=0.25.2
 ollama==0.1.6
-chromadb>=0.5.0
+# chromadb>=0.5.0  # Optional: requires C++ build tools on Windows
 
 # Validation & Config
 pydantic==2.5.3

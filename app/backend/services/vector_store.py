@@ -1,9 +1,17 @@
 """
 ChromaDB Vector Store for Context Embeddings
 Stores and retrieves context data with semantic search
+
+Note: chromadb is optional. If not installed, VectorStore will be a no-op.
 """
-import chromadb
-from chromadb.config import Settings
+try:
+    import chromadb
+    from chromadb.config import Settings
+    CHROMADB_AVAILABLE = True
+except ImportError:
+    CHROMADB_AVAILABLE = False
+    chromadb = None
+
 import httpx
 import json
 from typing import List, Dict, Any, Optional
@@ -21,15 +29,29 @@ class ContextDocument:
 
 
 class VectorStore:
-    """ChromaDB-based vector store for location contexts"""
+    """ChromaDB-based vector store for location contexts
+    
+    If chromadb is not installed, all methods become no-ops.
+    """
     
     def __init__(self, host: str = "localhost", port: int = 8000):
-        self.client = chromadb.HttpClient(host=host, port=port)
+        self.client = None
         self.collection = None
         self.ollama_url = "http://localhost:11434"
+        
+        if CHROMADB_AVAILABLE:
+            try:
+                self.client = chromadb.HttpClient(host=host, port=port)
+            except Exception as e:
+                logger.warning(f"ChromaDB not available: {e}")
+        else:
+            logger.info("ChromaDB not installed - vector store disabled")
     
     def init_collection(self, name: str = "tera_contexts"):
         """Initialize or get collection"""
+        if not self.client:
+            return
+            
         try:
             self.collection = self.client.get_or_create_collection(
                 name=name,
@@ -38,7 +60,6 @@ class VectorStore:
             logger.info(f"Collection '{name}' initialized with {self.collection.count()} documents")
         except Exception as e:
             logger.error(f"Failed to init collection: {e}")
-            raise
     
     async def generate_embedding(self, text: str) -> List[float]:
         """Generate embedding using Ollama"""
@@ -56,35 +77,49 @@ class VectorStore:
     
     def add_context(self, doc: ContextDocument) -> str:
         """Add a context document to the collection"""
+        if not self.client:
+            return doc.id
+            
         if not self.collection:
             self.init_collection()
         
-        self.collection.add(
-            ids=[doc.id],
-            documents=[doc.content],
-            metadatas=[{
-                "h3_index": doc.h3_index,
-                **doc.metadata
-            }]
-        )
+        if self.collection:
+            self.collection.add(
+                ids=[doc.id],
+                documents=[doc.content],
+                metadatas=[{
+                    "h3_index": doc.h3_index,
+                    **doc.metadata
+                }]
+            )
         return doc.id
     
     def add_contexts_batch(self, docs: List[ContextDocument]):
         """Add multiple context documents"""
+        if not self.client:
+            return
+            
         if not self.collection:
             self.init_collection()
         
-        self.collection.add(
-            ids=[d.id for d in docs],
-            documents=[d.content for d in docs],
-            metadatas=[{"h3_index": d.h3_index, **d.metadata} for d in docs]
-        )
-        logger.info(f"Added {len(docs)} documents to vector store")
+        if self.collection:
+            self.collection.add(
+                ids=[d.id for d in docs],
+                documents=[d.content for d in docs],
+                metadatas=[{"h3_index": d.h3_index, **d.metadata} for d in docs]
+            )
+            logger.info(f"Added {len(docs)} documents to vector store")
     
     def search_by_h3(self, h3_index: str, limit: int = 10) -> List[Dict]:
         """Get all contexts for a specific H3 cell"""
+        if not self.client:
+            return []
+            
         if not self.collection:
             self.init_collection()
+        
+        if not self.collection:
+            return []
         
         results = self.collection.get(
             where={"h3_index": h3_index},
@@ -95,8 +130,14 @@ class VectorStore:
     
     def semantic_search(self, query: str, limit: int = 10, h3_filter: str = None) -> List[Dict]:
         """Semantic search across all contexts"""
+        if not self.client:
+            return []
+            
         if not self.collection:
             self.init_collection()
+        
+        if not self.collection:
+            return []
         
         where = {"h3_index": h3_filter} if h3_filter else None
         
@@ -110,8 +151,14 @@ class VectorStore:
     
     def search_nearby_cells(self, h3_indexes: List[str], limit: int = 20) -> List[Dict]:
         """Search contexts in multiple H3 cells"""
+        if not self.client:
+            return []
+            
         if not self.collection:
             self.init_collection()
+        
+        if not self.collection:
+            return []
         
         results = self.collection.get(
             where={"h3_index": {"$in": h3_indexes}},
@@ -147,8 +194,14 @@ class VectorStore:
     
     def get_stats(self) -> Dict:
         """Get collection statistics"""
+        if not self.client:
+            return {"name": "disabled", "count": 0}
+            
         if not self.collection:
             self.init_collection()
+        
+        if not self.collection:
+            return {"name": "unavailable", "count": 0}
         
         return {
             "name": self.collection.name,
