@@ -72,6 +72,7 @@ export default function App() {
   const [professionalAnalysis, setProfessionalAnalysis] = useState(null)
   const [year, setYear] = useState(2026)
   const [scenario, setScenario] = useState("SSP2-4.5")
+  const [projectionFactor, setProjectionFactor] = useState(1.0)
   const abortController = useRef(null)
 
   function animateHexagons(features) {
@@ -238,6 +239,57 @@ export default function App() {
     }
   }
 
+  // Fetch temporal projection when year/scenario changes
+  useEffect(() => {
+    if (!city || !report) {
+      setProjectionFactor(1.0)
+      return
+    }
+    
+    const fetchProjection = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/extended/temporal?city=${encodeURIComponent(city)}&year=${year}&scenario=${encodeURIComponent(scenario)}`
+        )
+        if (res.ok) {
+          const data = await res.json()
+          // Calculate scaling factor based on projected vs current risk
+          const baseRisk = report.risk_score || 0.15
+          const projectedRisk = data.risks?.total || baseRisk
+          const factor = projectedRisk / Math.max(baseRisk, 0.01)
+          setProjectionFactor(Math.min(Math.max(factor, 0.5), 3.0)) // Clamp 0.5-3x
+        } else {
+          setProjectionFactor(1.0)
+        }
+      } catch (e) {
+        console.log('Temporal projection unavailable:', e)
+        setProjectionFactor(1.0)
+      }
+    }
+    
+    fetchProjection()
+  }, [city, year, scenario, report])
+
+  // Scale hexagon heights when projectionFactor changes
+  useEffect(() => {
+    if (!map.current) return
+    const src = map.current.getSource('hex')
+    if (!src) return
+    
+    // Get current features and scale heights
+    const currentData = src._data
+    if (currentData?.features && currentData.features.length > 0) {
+      const scaled = currentData.features.map(f => ({
+        ...f,
+        properties: {
+          ...f.properties,
+          height: (f.properties.intensity || 0.5) * 450 * projectionFactor
+        }
+      }))
+      src.setData({ type: 'FeatureCollection', features: scaled })
+    }
+  }, [projectionFactor])
+
   useEffect(() => {
     if (map.current) return
     
@@ -370,6 +422,17 @@ export default function App() {
           <div style={{ fontSize: 9, color: '#666', letterSpacing: 1 }}>RISIKOZELLEN</div>
           {phase && <div style={{ fontSize: 10, color: '#00ffff', marginTop: 6 }}>⟳ {phase}</div>}
         </div>
+        
+        {year !== 2026 && city && (
+          <div style={{ position: 'absolute', top: 70, right: 60, background: 'rgba(0,0,0,0.9)', padding: '10px 16px', borderRadius: 10, border: '2px solid #eab308' }}>
+            <div style={{ fontSize: 11, color: '#eab308', fontWeight: 700, letterSpacing: 1 }}>⏳ PROJEKTION</div>
+            <div style={{ fontSize: 18, color: '#fff', fontWeight: 700, marginTop: 4 }}>{year}</div>
+            <div style={{ fontSize: 8, color: '#888', marginTop: 2 }}>{scenario}</div>
+            <div style={{ fontSize: 9, color: projectionFactor > 1 ? '#ef4444' : projectionFactor < 1 ? '#22c55e' : '#888', marginTop: 4 }}>
+              {projectionFactor > 1 ? `+${((projectionFactor - 1) * 100).toFixed(0)}%` : projectionFactor < 1 ? `${((projectionFactor - 1) * 100).toFixed(0)}%` : '±0%'}
+            </div>
+          </div>
+        )}
         
         {city && (
           <div style={{ position: 'absolute', bottom: 25, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.9)', padding: '12px 35px', borderRadius: 25, border: '1px solid #333' }}>

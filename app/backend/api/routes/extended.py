@@ -8,34 +8,59 @@ router = APIRouter(prefix='/api/extended', tags=['Extended'])
 @router.get('/temporal')
 async def temporal_projection(city: str, year: int = 2026, scenario: str = 'SSP2-4.5'):
     from services.geocoding import geocode_city
-    from services.realtime_intelligence import realtime_service
+    from services.real_risk_engine import get_engine
     
-    geo = await geocode_city(city)
-    if not geo:
-        raise HTTPException(status_code=404, detail=f'City not found: {city}')
-    
-    lat, lon = geo['lat'], geo['lon']
-    country = geo['country']
-    
-    climate_risk = await realtime_service.get_climate_risk(lat, lon, year, scenario)
-    seismic_risk = await realtime_service.get_seismic_risk(lat, lon, year)
-    conflict_risk = await realtime_service.get_conflict_risk(lat, lon, country, year)
-    
-    total = climate_risk.value * 0.5 + conflict_risk.value * 0.3 + seismic_risk.value * 0.2
-    
-    return {
-        'status': 'success',
-        'city': city,
-        'country': country,
-        'year': year,
-        'scenario': scenario,
-        'risks': {
-            'total': round(total, 3),
-            'climate': {'value': round(climate_risk.value, 3), 'uncertainty': round(climate_risk.uncertainty, 3)},
-            'conflict': {'value': round(conflict_risk.value, 3), 'uncertainty': round(conflict_risk.uncertainty, 3)},
-            'seismic': {'value': round(seismic_risk.value, 3), 'uncertainty': round(seismic_risk.uncertainty, 3)}
+    try:
+        geo = await geocode_city(city)
+        if not geo:
+            raise HTTPException(status_code=404, detail=f'City not found: {city}')
+        
+        lat, lon = geo['lat'], geo['lon']
+        country = geo['country']
+        
+        # Base risk assessment (2024-2026 baseline)
+        engine = get_engine()
+        assessment = await engine.assess_location(
+            location=city,
+            lat=lat,
+            lon=lon,
+            country=country
+        )
+        
+        # Scenario multipliers (simple, explainable scaling)
+        scenario_factors = {
+            'SSP1-1.9': 0.9,
+            'SSP2-4.5': 1.0,
+            'SSP5-8.5': 1.2
         }
-    }
+        scenario_factor = scenario_factors.get(scenario, 1.0)
+        
+        # Year trend: gradual increase to 2100 (max +60%)
+        years_ahead = max(0, min(year, 2100) - 2026)
+        trend_factor = 1.0 + (years_ahead / 74.0) * 0.6  # 2026->2100
+        
+        projected_total = min(1.0, assessment.total_score * scenario_factor * trend_factor)
+        projected_climate = min(1.0, assessment.climate_score * scenario_factor * trend_factor)
+        projected_conflict = min(1.0, assessment.conflict_score * trend_factor)
+        
+        return {
+            'status': 'success',
+            'city': city,
+            'country': country,
+            'year': year,
+            'scenario': scenario,
+            'risks': {
+                'total': round(projected_total, 3),
+                'climate': {'value': round(projected_climate, 3), 'uncertainty': 0.12},
+                'conflict': {'value': round(projected_conflict, 3), 'uncertainty': 0.15},
+                'seismic': {'value': 0.05, 'uncertainty': 0.2}
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Temporal projection error for {city}: {e}")
+        raise HTTPException(status_code=500, detail=f"Temporal projection error: {e}")
 
 @router.get('/ocean')
 async def get_ocean_data(lat: float, lon: float):
