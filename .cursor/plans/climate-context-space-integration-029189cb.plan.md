@@ -1,4 +1,12 @@
-<!-- 029189cb-7ab3-4575-a56b-1f24a02157ff f3046b99-098d-47bc-b776-f671bac1a7cf -->
+---
+name: Integration des Globalen Klima-Kontextraum-Systems
+overview: ""
+todos:
+  - id: f5ee85ef-3fdc-4024-ac83-b65d37aaa41c
+    content: Terrain-Anpassung und globale Zusammenhänge visualisieren
+    status: pending
+---
+
 # Integration des Globalen Klima-Kontextraum-Systems
 
 ## Übersicht
@@ -271,18 +279,3 @@ Integration des Design-Frameworks aus dem Dokument in das bestehende System:
 - `backend/config.py`: Neue Konfigurationen
 - `backend/requirements.txt`: Neue Dependencies
 - `tera/tera---geospatial/package.json`: H3-Bibliothek
-
-### To-dos
-
-- [ ] Frontend: H3-js Bibliothek integrieren und simuliertes Grid ersetzen
-- [ ] Backend: H3-Grid-Engine mit Python h3-Bibliothek erstellen
-- [ ] Kontext-Tensor-Engine mit 6 Dimensionen und echten Datenquellen implementieren
-- [ ] SSP-Szenarien-Simulator für zukünftige Projektionen implementieren
-- [ ] Risikomodellierung nach IPCC-Framework (Hazard × Exposure × Vulnerability)
-- [ ] Handlungsempfehlungs-Engine mit Maßnahmen-Datenbank und kostenlosen LLMs
-- [ ] Datenbeschaffungs-Agenten für alle 6 Tensor-Dimensionen erstellen
-- [ ] Kostenlose LLM-Integration (Ollama, LlamaCpp) für Synthese und Analyse
-- [ ] FastAPI-Server mit allen Endpoints für Frontend-Backend-Kommunikation
-- [ ] Frontend API-Client und Integration in map_app.ts
-- [ ] Farbstrategie implementieren (divergierend für Risiko, sequentiell für Indikatoren)
-- [ ] Terrain-Anpassung und globale Zusammenhänge visualisieren

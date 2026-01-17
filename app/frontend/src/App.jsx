@@ -127,9 +127,27 @@ export default function App() {
           properties: { ...f.properties, height: (f.properties.intensity || 0.5) * 450 }
         }))
         src.setData({ type: 'FeatureCollection', features: final })
+        setPhase('')
+        setLoading(false)
       }
     }
     requestAnimationFrame(animate)
+  }
+
+  function getProgressPercent(phase) {
+    const phaseMap = {
+      'VERBINDUNG': 10,
+      'LADE ZELLEN': 30,
+      'KARTIERUNG': 50,
+      'TESSELLIERUNG': 60,
+      'RISIKOANALYSE': 75,
+      '3D EXTRUSION': 90,
+      'KALIBRIERUNG': 95,
+      'KEINE ZELLEN': 100,
+      'FEHLER ZELLEN': 100,
+      'FEHLER': 100
+    }
+    return phaseMap[phase] || 5
   }
 
   async function analyze(name) {
@@ -199,22 +217,25 @@ export default function App() {
             animateHexagons(hexData.features)
           } else {
             setPhase('KEINE ZELLEN')
+            setLoading(false)
           }
         } catch (err) {
           console.error('TERA: risk-map error:', err)
           setPhase('FEHLER ZELLEN')
+          setLoading(false)
         }
       }, 3000)
       
     } catch (e) {
-      if (e.name === "AbortError") { setLoading(false);
+      if (e.name === "AbortError") {
+        setLoading(false)
         console.log('TERA: Request aborted for', name)
         return
       }
       console.error(e)
       setPhase('FEHLER')
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   useEffect(() => {
@@ -358,9 +379,27 @@ export default function App() {
         
         {loading && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center', width: 320 }}>
               <div style={{ fontSize: 65 }}>🛰️</div>
               <div style={{ color: '#00ffff', marginTop: 20, fontSize: 16, letterSpacing: 2 }}>ANALYSIERE {input.toUpperCase()}</div>
+              
+              {/* Progress Bar */}
+              <div style={{ marginTop: 24, background: '#1a1a1a', borderRadius: 8, height: 8, overflow: 'hidden', border: '1px solid #333' }}>
+                <div style={{
+                  width: `${getProgressPercent(phase)}%`,
+                  height: '100%',
+                  background: 'linear-gradient(90deg, #00ffff, #00bfff)',
+                  boxShadow: '0 0 12px #00ffff',
+                  transition: 'width 0.4s ease-out',
+                  borderRadius: 8
+                }} />
+              </div>
+              
+              {/* Phase + Percentage */}
+              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
+                <span style={{ color: '#666' }}>{phase || 'INITIALISIERUNG'}</span>
+                <span style={{ color: '#00ffff' }}>{getProgressPercent(phase)}%</span>
+              </div>
             </div>
           </div>
         )}

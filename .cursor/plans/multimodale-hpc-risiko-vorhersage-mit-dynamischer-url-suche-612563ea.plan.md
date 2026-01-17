@@ -1,4 +1,9 @@
-<!-- 612563ea-3ed9-498f-a260-ba78e820a0b9 241fd67b-4eb1-40b3-84eb-f3394790f8f7 -->
+---
+name: Multimodale HPC-Risiko-Vorhersage mit dynamischer URL-Suche
+overview: ""
+todos: []
+---
+
 # Multimodale HPC-Risiko-Vorhersage mit dynamischer URL-Suche
 
 ## Übersicht
