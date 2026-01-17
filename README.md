@@ -33,10 +33,12 @@ TERA consists of two main components:
 ```
 tera-geospatial/
 ├── README.md                    # This file - single source of truth
-├── PROJEKTBERICHT_UNIVERSITAET.md  # University report (German)
 ├── requirements.txt             # Python dependencies
 ├── docker-compose.yml           # Docker configuration
 ├── Dockerfile                   # Docker image definition
+│
+├── docs/                        # Documentation
+│   └── PROJEKTBERICHT_UNIVERSITAET.md  # University report (German)
 │
 ├── mining/                      # Data Mining Pipeline
 │   ├── extractors.py            # Source-specific web scrapers
@@ -74,6 +76,27 @@ tera-geospatial/
 ---
 
 ## 🔬 Data & Web Mining Components
+
+### End-to-End Mining Workflow (Text + Web Mining)
+
+```mermaid
+flowchart TD
+  sources[WebSources] --> fetch[FetchAndCrawl]
+  fetch --> parse[HTMLParse]
+  parse --> extract[TextNumberExtract]
+  extract --> validate[SchemaValidate]
+  validate --> store[StoreRecords]
+  store --> score[RiskScoring]
+  store --> index[IRIndex]
+  score --> api[FastAPI]
+  index --> api
+  api --> map[MapVisualization]
+```
+
+**What this proves for the course:**
+- Web mining: crawl + parse + compliance checks
+- Text mining: regex extraction + keyword scoring
+- IR: TF-IDF / embeddings to retrieve relevant context
 
 ### 1. Web Crawling (`mining/extractors.py`)
 
@@ -300,7 +323,7 @@ GET /api/analysis/professional?city=Miami
 
 ## 📚 Documentation
 
-- **[PROJEKTBERICHT_UNIVERSITAET.md](PROJEKTBERICHT_UNIVERSITAET.md)** - Complete university project report (German)
+- **[docs/PROJEKTBERICHT_UNIVERSITAET.md](docs/PROJEKTBERICHT_UNIVERSITAET.md)** - Complete university project report (German)
 - **[API Documentation](http://localhost:8080/docs)** - Interactive Swagger UI (when running)
 
 ---
