@@ -70,7 +70,7 @@ terraform/*.tfvars
 *.tmp
 *.temp
 /tmp/
-
+.history/
 # Build outputs
 dist/
 build/
